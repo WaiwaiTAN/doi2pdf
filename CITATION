@@ -1,0 +1,12 @@
+Zheng (2025). doi2pdf. GitHub repository: https://github.com/WaiwaiTAN/doi2pdf
+
+If you use this software in a paper, please cite it and consider acknowledging the author.
+
+BibTeX example:
+
+@misc{zheng_doi2pdf_2025,
+  author = {Zheng Tan},
+  title = {doi2pdf},
+  year = {2025},
+  note = {GitHub repository, https://github.com/WaiwaiTAN/doi2pdf},
+}

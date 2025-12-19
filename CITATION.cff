@@ -1,0 +1,11 @@
+cff-version: 1.2.0
+message: "If you use this software in a paper, please cite it and consider acknowledging the author."
+title: "doi2pdf"
+version: "0.1"
+date-released: "2025-12-19"
+authors:
+  - family-names: Tan
+    given-names: "Zheng"
+    affiliation: "the University of Hong Kong"
+    orcid: "0000-0002-2352-2915"
+repository-code: "https://github.com/WaiwaiTAN/doi2pdf"

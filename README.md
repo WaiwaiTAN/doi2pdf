@@ -62,7 +62,7 @@ results = process_dois(["10.1021/acscatal.9b05338"], driver, proxy=my_proxy)
 ---
 
 ## Notes & Caveats ⚠️
-- The current implementation provides a synchronous `start_sync` method; asynchronous behavior is a TODO.
+- The current implementation provides a synchronous `start_download_sync` method; asynchronous behavior is a TODO.
 - The first navigation allows 20s for interactive login (e.g., institution CAS); subsequent navigations wait for the page to reach `document.readyState == 'complete'` (configurable via `wait_time`).
 - Publisher-specific automation is implemented for ACS (clicks the PDF button). Add more branches in `process_dois` for other publishers.
 - Running Selenium requires a compatible Chrome/Chromedriver installed; you can run headless by setting `headless=True` in `Downloader`.
@@ -76,4 +76,21 @@ results = process_dois(["10.1021/acscatal.9b05338"], driver, proxy=my_proxy)
 
 ---
 
-If you'd like, I can add a LICENSE, GitHub Actions CI, or a small example script for publishing to GitHub—what would you prefer next? 🚀
+## Citation 📑
+
+If you use this project in a paper, please **cite it** and consider acknowledging the author. A machine-readable citation is provided in `CITATION.cff`; a BibTeX example is in `CITATION`.
+
+```
+@misc{zheng_doi2pdf_2025,
+  author = {Zheng Tan},
+  title = {doi2pdf},
+  year = {2025},
+  note = {GitHub repository, https://github.com/WaiwaiTAN/doi2pdf},
+}
+```
+
+## Usage & Legal ⚖️
+
+This project is released under the **MIT License** — see `LICENSE` for details. Use of this tool to access publisher pages may be subject to publisher terms of service and institutional access rules; please respect terms of service and applicable policies when using automated access.
+
+---
