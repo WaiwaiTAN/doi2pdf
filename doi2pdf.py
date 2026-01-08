@@ -44,7 +44,7 @@ def doi_to_url(doi: str) -> tuple[str, str]:
     domain = urlparse(final_url).netloc
     publisher_map = {
         "pubs.acs.org": "ACS",
-        "sciencedirect.com": "Elsevier",
+        "linkinghub.elsevier.com": "Elsevier",
         "link.springer.com": "Springer",
         "onlinelibrary.wiley.com": "Wiley",
         "tandfonline.com": "Taylor & Francis",
@@ -150,6 +150,10 @@ def process_dois(dois: list[str], driver_obj, wait_time: int = 10, proxy=None) -
                     info["status"] = "click_pdf_failed"
                     info["error"] = str(e)
             elif publisher == "Elsevier":
+                time.sleep(5)
+                # TODO: Find the PDF download button for Elsevier and click it
+                # btn = local_driver.find_element(By.XPATH, "//a[contains(@class, 'pdf-download-button')]")
+                # btn.click()
                 info["status"] = "no_action_for_publisher"
             else:
                 info["status"] = "no_action_for_publisher"
@@ -225,7 +229,7 @@ class DOI2PDFDownloader:
 # Example usage
 if __name__ == "__main__":
     dl = DOI2PDFDownloader(download_path='.', proxy_method='hku')
-    dl.add_dois(["10.1021/acscatal.9b05338", "10.1021/jacs.5c12544", "10.1021/acs.jpcc.3c04283"])
+    dl.add_dois(["10.1021/acscatal.9b05338", "10.1016/j.actamat.2020.09.083", "10.1021/acs.jpcc.3c04283"])
     results = dl.start_download_sync(wait_time=10)
     print(results)
     dl.close()
