@@ -5,7 +5,7 @@ from __future__ import annotations
 
 import sys
 import argparse
-from ezproxy import hku_proxy_url, resolve_doi_to_domain, PUBLISHER_MAP
+from .ezproxy import hku_proxy_url, resolve_doi_to_domain, PUBLISHER_MAP
 
 
 def main() -> int:

@@ -65,4 +65,4 @@ def hku_proxy_url(doi: str) -> str:
         proxied = domain.replace(".", "-") + ".eproxy.lib.hku.hk"
         return f"https://{proxied}/doi/{doi}"
 
-    return f"https://ezproxy.lib.hku.hk/login?url=https://doi.org/{doi}"
+    return f"https://eproxy.lib.hku.hk/login?url=https://doi.org/{doi}"

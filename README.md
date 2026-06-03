@@ -1,96 +1,110 @@
-# doi2pdf 📥
+# doi2pdf & doi2proxy 📥
 
-A small Python module to resolve DOIs, proxy publisher pages via HKU proxy (or a user-provided function), and perform publisher-specific actions (e.g., click ACS PDF button) using Selenium.
+A Python toolkit to resolve DOIs, convert to HKU EZproxy URLs, and automate PDF downloads from academic publishers.
 
-## Features ✅
-- Resolve DOI -> publisher URL and detect publisher
-- Optional HKU-proxy conversion or user-supplied proxy function
-- Headless or interactive Chrome usage via Selenium
-- `DOI2PDFDownloader` class with queue management and synchronous download
+## 📦 Two Independent Projects
+
+This repository contains two complementary packages:
+
+### 1. **`doi2proxy`** - CLI tool for DOI to EZproxy conversion
+- **Install:** `uv tool install ./doi2proxy`
+- **Use:** `doi2proxy url 10.1038/nature12373`
+- **No dependencies** - lightweight CLI tool
+- Commands:
+  - `doi2proxy url <DOI>` - Convert DOI to HKU EZproxy URL
+  - `doi2proxy resolve <DOI>` - Resolve DOI to publisher domain
+  - `doi2proxy list` - List supported publishers
+
+### 2. **`doi2pdf`** - Python library for PDF automation
+- **Install:** `pip install ./doi2pdf`
+- **Use:** Import in Python code for automated PDF downloads with Selenium
+- **Requires:** selenium, requests (for PDF automation)
+- Classes:
+  - `DOI2PDFDownloader` - Queue management and browser automation
+  - `process_dois()` - Process list of DOIs with custom proxy functions
 
 ---
 
-## Installation 🔧
+## 🚀 Quick Start
 
-1. Create a virtualenv and install dependencies:
-
+### Using `doi2proxy` CLI
 ```bash
-python -m venv .venv
-source .venv/bin/activate
-pip install -r requirements.txt
+# Install as a tool
+uv tool install ./doi2proxy
+
+# Convert DOI to proxy URL
+doi2proxy url 10.1126/science.adr3149
+# Output: https://www-science-org.eproxy.lib.hku.hk/doi/10.1126/science.adr3149
+
+# Resolve DOI to publisher
+doi2proxy resolve 10.1021/acscatal.9b05338
+
+# List all supported publishers
+doi2proxy list
 ```
 
-2. Make sure Chrome and a matching ChromeDriver are available on PATH.
-   - This project was tested with **Chrome 143**; ensure your ChromeDriver matches your Chrome version.
-   - Optionally use `webdriver-manager` in your own wrapper to auto-download drivers.
+### Using `doi2pdf` library
+```bash
+# Install as library
+pip install ./doi2pdf
 
----
-
-## Quick usage 💡
-
-Synchronous example using the `DOI2PDFDownloader` class:
-
-```python
+# Use in Python code
 from doi2pdf import DOI2PDFDownloader
 
-# create downloader (defaults to HKU proxy behavior)
 dl = DOI2PDFDownloader(download_path='.', proxy_method='hku')
-# queue DOIs
-dl.add_dois(["10.1021/acscatal.9b05338", "10.1021/acs.jpcc.3c04283"])
-# start (first page will wait 20s for authentication, then pages wait for load)
-results = dl.start_sync(wait_time=10)
-print(results)
-# close the browser
+dl.add_dois(["10.1021/acscatal.9b05338"])
+results = dl.start_download_sync(wait_time=10)
 dl.close()
 ```
 
-Direct call to `process_dois` (useful for custom driver/proxy functions):
+---
 
-```python
-from doi2pdf import process_dois
+## 📋 Requirements
 
-# `driver` should be a Selenium webdriver instance
-results = process_dois(["10.1021/acscatal.9b05338"], driver, wait_time=8, proxy='hku')
+- Python >=3.8
+- For `doi2proxy`: No additional dependencies
+- For `doi2pdf`: 
+  - selenium >=4.8.0
+  - requests >=2.28.0
+  - Chrome and ChromeDriver for automation
 
-# or use a custom proxy callable
-def my_proxy(url: str) -> str:
-    return url.replace('https://', 'https://myproxy.example.com/')
+---
 
-results = process_dois(["10.1021/acscatal.9b05338"], driver, proxy=my_proxy)
+## 📁 Directory Structure
+
+```
+.
+├── doi2proxy/          # CLI tool (uv tool install)
+│   ├── src/doi2proxy/
+│   │   ├── __init__.py
+│   │   ├── cli.py          # CLI entry point
+│   │   └── ezproxy.py      # HKU EZproxy helper
+│   ├── pyproject.toml
+│   └── README.md
+│
+└── doi2pdf/            # PDF library (pip install)
+    ├── src/doi2pdf/
+    │   ├── __init__.py
+    │   ├── downloader.py    # DOI2PDFDownloader class
+    │   ├── elsevier.py      # Elsevier-specific automation
+    │   └── _ezproxy.py      # Internal EZproxy helper
+    ├── pyproject.toml
+    └── README.md
 ```
 
 ---
 
-## Notes & Caveats ⚠️
-- The current implementation provides a synchronous `start_download_sync` method; asynchronous behavior is a TODO.
-- The first navigation allows 20s for interactive login (e.g., institution CAS); subsequent navigations wait for the page to reach `document.readyState == 'complete'` (configurable via `wait_time`).
-- Publisher-specific automation is implemented for ACS (clicks the PDF button). Add more branches in `process_dois` for other publishers.
-- Running Selenium requires a compatible Chrome/Chromedriver installed; you can run headless by setting `headless=True` in `Downloader`.
+## 📝 See Also
+
+- `doi2proxy/README.md` - CLI tool documentation
+- `doi2pdf/README.md` - Library documentation
 
 ---
 
-## Contributing ✨
-- Add tests for publisher behaviors
-- Add Async start implementation
-- Improve driver management (e.g., support for Firefox, remote drivers, or webdriver-manager integration)
+## 📄 License
 
----
+MIT License - see LICENSE file for details.
 
-## Citation 📑
+## 📧 Author
 
-If you use this project in a paper, please **cite it** and consider acknowledging the author. A machine-readable citation is provided in `CITATION.cff`; a BibTeX example is in `CITATION`.
-
-```
-@misc{zheng_doi2pdf_2025,
-  author = {Zheng Tan},
-  title = {doi2pdf},
-  year = {2025},
-  note = {GitHub repository, https://github.com/WaiwaiTAN/doi2pdf},
-}
-```
-
-## Usage & Legal ⚖️
-
-This project is released under the **MIT License** — see `LICENSE` for details. Use of this tool to access publisher pages may be subject to publisher terms of service and institutional access rules; please respect terms of service and applicable policies when using automated access.
-
----
+Tan Zheng <zhengtan@connect.hku.hk>
