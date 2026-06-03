@@ -11,23 +11,12 @@ from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
 from selenium.common.exceptions import TimeoutException
 
+from ezproxy import hku_proxy_url
+
 
 # ==============================
-# HKU eProxy URL convert
+# Wait for page load
 # ==============================
-def convert_to_hku_proxy(url: str) -> str:
-    parsed = urlparse(url)
-    proxy_netloc = parsed.netloc.replace(".", "-") + ".eproxy.lib.hku.hk"
-    return urlunparse((
-        parsed.scheme,
-        proxy_netloc,
-        parsed.path,
-        parsed.params,
-        parsed.query,
-        parsed.fragment,
-    ))
-
-
 def wait_for_page_load(driver, timeout=25):
     end = time.time() + timeout
     while time.time() < end:
@@ -38,6 +27,7 @@ def wait_for_page_load(driver, timeout=25):
             pass
         time.sleep(0.5)
     return False
+
 
 
 def wait_downloads_finish(download_dir: str, timeout: int = 30):

@@ -4,35 +4,52 @@ import requests
 from urllib.parse import urlparse, urlunparse
 from selenium import webdriver
 from selenium.webdriver.common.by import By
+from ezproxy import hku_proxy_url, resolve_doi_to_domain
 
-def convert_to_hku_proxy(url: str) -> str:
-    """
-    Convert a publisher URL into HKU library proxy format.
-    Example:
-    https://pubs.acs.org/doi/10.1021/acscatal.9b05338
-    -> https://pubs-acs-org.eproxy.lib.hku.hk/doi/10.1021/acscatal.9b05338
-    """
-    parsed = urlparse(url)
-    # Replace dots in the domain with dashes, then append HKU proxy suffix
-    proxy_netloc = parsed.netloc.replace('.', '-') + ".eproxy.lib.hku.hk"
-    proxied_url = urlunparse((parsed.scheme, proxy_netloc, parsed.path, parsed.params, parsed.query, parsed.fragment))
-    return proxied_url
+PUBLISHER_DOMAIN_MAP: dict[str, str] = {
+    "pubs.acs.org": "ACS",
+    "www.sciencedirect.com": "Elsevier",
+    "sciencedirect.com": "Elsevier",
+    "linkinghub.elsevier.com": "Elsevier",
+    "link.springer.com": "Springer",
+    "onlinelibrary.wiley.com": "Wiley",
+    "tandfonline.com": "Taylor & Francis",
+    "cambridge.org": "Cambridge University Press",
+    "www.nature.com": "Nature Publishing Group",
+    "nature.com": "Nature Publishing Group",
+    "ieeexplore.ieee.org": "IEEE",
+    "ieee.org": "IEEE",
+    "royalsocietypublishing.org": "Royal Society",
+    "pubs.rsc.org": "RSC",
+    "journals.aps.org": "APS",
+}
 
 
-def doi_to_url(doi: str) -> tuple[str, str]:
+def _resolve_doi_to_url(doi: str) -> tuple[str, str]:
     """
     Resolve a DOI into its publisher URL and return the publisher type.
+    Uses ezproxy.resolve_doi_to_domain() for domain resolution.
     Example:
     '10.1021/acscatal.9b05338' ->
     ('https://pubs.acs.org/doi/10.1021/acscatal.9b05338', 'ACS')
     """
+    try:
+        # Try using ezproxy's resolve_doi_to_domain first
+        domain = resolve_doi_to_domain(doi)
+        if domain:
+            final_url = f"https://{domain}/doi/{doi}"
+            publisher = PUBLISHER_DOMAIN_MAP.get(domain, "Unknown")
+            return final_url, publisher
+    except Exception:
+        pass
+
+    # Fallback: Use requests library to resolve DOI
     resolver_url = f"https://doi.org/{doi}"
     try:
         response = requests.get(resolver_url, allow_redirects=True, timeout=10)
         response.raise_for_status()
         final_url = response.url
     except requests.HTTPError as e:
-        # Even on error, response object may exist
         if e.response is not None:
             final_url = e.response.url
         else:
@@ -40,21 +57,8 @@ def doi_to_url(doi: str) -> tuple[str, str]:
     except requests.RequestException as e:
         return (f"Error resolving DOI {doi}: {e}", "Unknown")
 
-    # Extract domain and map to publisher
     domain = urlparse(final_url).netloc
-    publisher_map = {
-        "pubs.acs.org": "ACS",
-        "linkinghub.elsevier.com": "Elsevier",
-        "link.springer.com": "Springer",
-        "onlinelibrary.wiley.com": "Wiley",
-        "tandfonline.com": "Taylor & Francis",
-        "cambridge.org": "Cambridge University Press",
-        "nature.com": "Nature Publishing Group",
-        "ieee.org": "IEEE",
-        "royalsocietypublishing.org": "Royal Society",
-    }
-    publisher = publisher_map.get(domain, "Unknown")
-
+    publisher = PUBLISHER_DOMAIN_MAP.get(domain, "Unknown")
     return final_url, publisher
 
 
@@ -75,12 +79,12 @@ def _wait_for_page_load(driver, timeout=10):
 def process_dois(dois: list[str], driver_obj, wait_time: int = 10, proxy=None) -> dict:
     """
     Process a list of DOIs:
-    - Resolve each DOI to a publisher URL and publisher via `doi_to_url`
+    - Resolve each DOI to a publisher URL and publisher via `_resolve_doi_to_url`
     - Optionally convert the publisher URL using a proxy function
     - Perform publisher-specific actions (e.g., for ACS, navigate and click the PDF button)
 
     The `proxy` parameter may be:
-    - None or 'hku' (default): use `convert_to_hku_proxy`
+    - None or 'hku' (default): use `hku_proxy_url` from ezproxy
     - 'none': do not proxy, use the resolved URL directly
     - a callable: function that accepts (url: str) and returns a proxied URL (str)
 
@@ -95,7 +99,7 @@ def process_dois(dois: list[str], driver_obj, wait_time: int = 10, proxy=None) -
 
     for doi in dois:
         info: dict = {"doi": doi}
-        url, publisher = doi_to_url(doi)
+        url, publisher = _resolve_doi_to_url(doi)
         info["url"] = url
         info["publisher"] = publisher
 
@@ -108,14 +112,14 @@ def process_dois(dois: list[str], driver_obj, wait_time: int = 10, proxy=None) -
         # Determine proxied URL using the provided proxy parameter
         try:
             if proxy is None or proxy == 'hku':
-                proxied = convert_to_hku_proxy(url)
+                proxied = hku_proxy_url(doi)
             elif proxy == 'none':
                 proxied = url
             elif callable(proxy):
                 proxied = proxy(url)
             else:
                 # Unknown proxy string: fall back to HKU proxy
-                proxied = convert_to_hku_proxy(url)
+                proxied = hku_proxy_url(doi)
         except Exception as e:
             info["status"] = "proxy_error"
             info["error"] = f"proxy function error: {e}"
@@ -164,6 +168,7 @@ def process_dois(dois: list[str], driver_obj, wait_time: int = 10, proxy=None) -
         results[doi] = info
 
     return results
+
 
 
 class DOI2PDFDownloader:
