@@ -11,7 +11,7 @@ from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
 from selenium.common.exceptions import TimeoutException
 
-from ezproxy import hku_proxy_url
+from ._ezproxy import hku_proxy_url
 
 
 # ==============================
@@ -257,7 +257,7 @@ def main(excel_path="Publisher/elsevier.xlsx"):
         ensure_download_allowed(driver, download_dir)
 
         # 1) 先打开第一个 DOI，让你手动登录一次
-        first_url = convert_to_hku_proxy(f"https://doi.org/{dois[0]}")
+        first_url = hku_proxy_url(f"https://doi.org/{dois[0]}")
         driver.get(first_url)
         wait_for_page_load(driver)
 
@@ -266,7 +266,7 @@ def main(excel_path="Publisher/elsevier.xlsx"):
 
         # 2) 强制触发一次 PDF challenge，并停住让你通过（你要求的）
         print("\n[STEP] Triggering a PDF download once to surface Verify page (if any)...")
-        driver.get(convert_to_hku_proxy(f"https://doi.org/{dois[0]}"))
+        driver.get(hku_proxy_url(f"https://doi.org/{dois[0]}"))
         wait_for_page_load(driver)
         handle_challenge_if_present(driver, manual_wait_sec=30)
 
@@ -285,7 +285,7 @@ def main(excel_path="Publisher/elsevier.xlsx"):
         for i, doi in enumerate(dois, 1):
             print(f"\n[{i}/{len(dois)}] Processing DOI: {doi}")
             try:
-                article_url = convert_to_hku_proxy(f"https://doi.org/{doi}")
+                article_url = hku_proxy_url(f"https://doi.org/{doi}")
                 print(f"[INFO] Article URL: {article_url}")
                 driver.get(article_url)
                 wait_for_page_load(driver)

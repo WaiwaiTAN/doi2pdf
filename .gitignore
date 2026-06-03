@@ -1,3 +1,7 @@
 __pycache__
 dist
 .venv
+.vscode
+*.crdownload
+*.pdf
+*.zip

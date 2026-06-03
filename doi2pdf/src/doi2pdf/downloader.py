@@ -4,7 +4,7 @@ import requests
 from urllib.parse import urlparse, urlunparse
 from selenium import webdriver
 from selenium.webdriver.common.by import By
-from ._ezproxy import hku_proxy_url, resolve_doi_to_domain
+from _ezproxy import hku_proxy_url, resolve_doi_to_domain
 
 PUBLISHER_DOMAIN_MAP: dict[str, str] = {
     "pubs.acs.org": "ACS",
