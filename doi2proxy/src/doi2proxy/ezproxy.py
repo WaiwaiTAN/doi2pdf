@@ -9,7 +9,6 @@ from urllib.parse import urlparse
 
 PUBLISHER_MAP: dict[str, str] = {
     "10.1021": "pubs.acs.org",
-    "10.1016": "www.sciencedirect.com",
     "10.1007": "link.springer.com",
     "10.1038": "www.nature.com",
     "10.1002": "onlinelibrary.wiley.com",
@@ -25,7 +24,7 @@ import json
 from urllib import request, error
 from urllib.parse import urlparse
 
-def resolve_doi_to_domain(doi: str) -> str | None:
+def resolve_doi_to_domain(doi: str) -> tuple [str | None, str | None]:
     url = f"https://doi.org/api/handles/{doi}"
     req = request.Request(
         url,
@@ -38,10 +37,11 @@ def resolve_doi_to_domain(doi: str) -> str | None:
         with request.urlopen(req, timeout=8) as r:
             data = json.loads(r.read())
             if data.get("responseCode") != 1:
-                return None
+                return None, None
             for v in data["values"]:
                 if v["type"] == "URL":
-                    return urlparse(v["data"]["value"]).hostname
+                    parsed = urlparse(v["data"]["value"])
+                    return parsed.hostname, parsed.path
     except error.URLError as e:
         print(f"网络错误：无法解析 DOI {doi}（{e.reason}）")
         raise
@@ -60,9 +60,9 @@ def hku_proxy_url(doi: str) -> str:
             proxied = domain.replace(".", "-") + ".eproxy.lib.hku.hk"
             return f"https://{proxied}/doi/{doi}"
 
-    domain = resolve_doi_to_domain(doi)
+    domain, path = resolve_doi_to_domain(doi)
     if domain:
         proxied = domain.replace(".", "-") + ".eproxy.lib.hku.hk"
-        return f"https://{proxied}/doi/{doi}"
+        return f"https://{proxied}{path}"
 
     return f"https://eproxy.lib.hku.hk/login?url=https://doi.org/{doi}"
