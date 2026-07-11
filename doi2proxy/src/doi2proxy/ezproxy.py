@@ -57,8 +57,13 @@ def hku_proxy_url(doi: str) -> str:
 
     for prefix, domain in PUBLISHER_MAP.items():
         if doi.startswith(prefix):
-            proxied = domain.replace(".", "-") + ".eproxy.lib.hku.hk"
-            return f"https://{proxied}/doi/{doi}"
+            if domain != "nature.com":
+                proxied = domain.replace(".", "-") + ".eproxy.lib.hku.hk"
+                return f"https://{proxied}/doi/{doi}"
+            else:
+                proxied = domain.replace(".", "-") + ".eproxy.lib.hku.hk"
+                suffix = doi.split("/", 1)[1]
+                return f"https://{proxied}/articles/{suffix}"
 
     domain, path = resolve_doi_to_domain(doi)
     if domain:
