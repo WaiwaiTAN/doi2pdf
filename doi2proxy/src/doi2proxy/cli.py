@@ -51,9 +51,11 @@ def main() -> int:
     args = parser.parse_args()
     
     if args.command == "url":
-        url = hku_proxy_url(args.doi)
-        print(url)
-        return 0
+        try:
+            print(hku_proxy_url(args.doi))
+            return 0
+        except ValueError as exc:
+            parser.error(str(exc))
     
     elif args.command == "list":
         print("Supported DOI prefixes and publishers:")
@@ -63,7 +65,10 @@ def main() -> int:
         return 0
     
     elif args.command == "resolve":
-        domain = resolve_doi_to_domain(args.doi)
+        try:
+            domain = resolve_doi_to_domain(args.doi)
+        except ValueError as exc:
+            parser.error(str(exc))
         if domain:
             print(f"Domain: {domain}")
             # Also show the proxy URL

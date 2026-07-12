@@ -4,7 +4,7 @@ build-backend = "hatchling.build"
 
 [project]
 name = "doi2proxy"
-version = "0.1.0"
+version = "0.1.2"
 description = "Convert DOI to HKU EZproxy URLs - CLI tool"
 readme = "README.md"
 license = {text = "MIT"}

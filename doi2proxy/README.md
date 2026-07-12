@@ -6,7 +6,8 @@ A lightweight CLI tool to convert DOI to HKU EZproxy URLs.
 
 ```bash
 # Install as a tool
-uv tool install .
+cd doi2proxy
+uv tool install --force .
 
 # Or install to a virtual environment
 pip install .
@@ -17,7 +18,7 @@ pip install .
 ```bash
 # Convert DOI to HKU EZproxy URL
 doi2proxy url 10.1038/nature12373
-# Output: https://www-nature-com.eproxy.lib.hku.hk/doi/10.1038/nature12373
+# Output: https://www-nature-com.eproxy.lib.hku.hk/articles/nature12373
 
 # Resolve DOI to publisher domain
 doi2proxy resolve 10.1021/acscatal.9b05338
@@ -35,7 +36,6 @@ The tool supports the following DOI prefixes and publishers:
 
 ```
 10.1021      -> pubs.acs.org (ACS)
-10.1016      -> www.sciencedirect.com (Elsevier)
 10.1007      -> link.springer.com (Springer)
 10.1038      -> www.nature.com (Nature)
 10.1002      -> onlinelibrary.wiley.com (Wiley)
@@ -45,6 +45,8 @@ The tool supports the following DOI prefixes and publishers:
 ```
 
 For DOIs not in the list, the tool will attempt to resolve the DOI to its actual publisher domain and create the proxy URL.
+Elsevier (`10.1016`) and MDPI (`10.3390`) always use this dynamic resolution so
+their publisher-specific article paths are preserved.
 
 ## Python API
 
